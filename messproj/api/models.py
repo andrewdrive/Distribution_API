@@ -5,15 +5,11 @@ from django.core.validators import RegexValidator
 
 TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
 
+
 class Client(models.Model):
      phone_regex = RegexValidator(regex=r'^\d{11}', message="Phone number in the format: '7XXXXXXXXXX'")
      phone_number = models.CharField(validators=[phone_regex], max_length=12, blank=True, verbose_name='номер телефона клиента')
-
-     #mobile_operator_code = models.CharField(max_length=3, default=phone_number[1:4], verbose_name='код мобильного оператора')
-     @property
-     def mobile_operator_code(self):
-          return self.phone_number[1:4]
-
+     mobile_operator_code = models.CharField(max_length=3, default='000', verbose_name='код мобильного оператора')
      tag = models.CharField(max_length=30, blank=True, verbose_name='тег(произвольная метка)')
      timezone = models.CharField(max_length=32, choices=TIMEZONES, default='UTC', verbose_name='часовой пояс')
 
@@ -22,6 +18,10 @@ class Client(models.Model):
 
      def __str__(self):
           return self.phone_number
+     
+     def save(self, *args, **kwargs):
+          self.mobile_operator_code = self.phone_number[1:4]
+          super(Client, self).save(*args, **kwargs)
 
 
 class Distribution(models.Model):
