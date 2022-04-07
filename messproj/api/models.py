@@ -26,10 +26,11 @@ class Client(models.Model):
 
 class Distribution(models.Model):
      start_datetime = models.DateTimeField(null=True, verbose_name='дата и время запуска рассылки')
+     finish_datetime = models.DateTimeField(null=True, verbose_name='дата и время окончания рассылки')
      delivery_text = models.CharField(max_length=255, verbose_name='текст сообщения для доставки клиенту')
-     client_filter = models.ManyToManyField(Client, related_name='distribution_cli_filter', verbose_name="""фильтр \
-                                         свойств клиентов, на которых должна быть произведена рассылка(код мобильного оператора, тег)""")
-     finish_datetime = models.DateTimeField(null=True, verbose_name='')
+     clients = models.ManyToManyField(Client, related_name='distribution_cli_filter', verbose_name="""фильтр \
+                                        свойств клиентов, на которых должна быть произведена рассылка(код мобильного оператора, тег)""")
+     
 
      class Meta:
           ordering = ['start_datetime']
@@ -39,17 +40,16 @@ class Distribution(models.Model):
 
 
 class Message(models.Model):
-     delivery_datetime = models.DateTimeField(null=True, verbose_name='дата и время создания(отправки)')
-     delivery_status = models.BooleanField(blank=True, default=False, verbose_name='статус отправки')
      distribution_id = models.ForeignKey(Distribution, on_delete=models.CASCADE, related_name='message_dist_id', verbose_name='id рассылки, в рамках которой было отправлено сообщение')
      client_id = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='message_cli_id', verbose_name='id клиента, которому отправили')
-
+     delivery_datetime = models.DateTimeField(null=True, verbose_name='дата и время создания(отправки)')
+     delivery_status = models.BooleanField(blank=True, default=False, verbose_name='статус отправки')
+   
      class Meta:
           ordering = ['delivery_datetime']
 
      def __str__(self):
           return str(self.delivery_datetime)
-
 
 
 # Create your models here.

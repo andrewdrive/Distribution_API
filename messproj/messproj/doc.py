@@ -5,7 +5,7 @@ from drf_yasg import openapi
 
 schema_view = get_schema_view(
     openapi.Info(
-        title='Rclone API',
+        title='Distribution Managment API',
         description='Documentation',
         default_version=1,
     ),

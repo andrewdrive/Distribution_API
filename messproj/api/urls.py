@@ -6,6 +6,7 @@ from api import views
 
 router = routers.SimpleRouter()
 router.register('clients', views.ClientViewSet)
+router.register('distributions', views.DistributionViewSet)
 
 
 urlpatterns = router.urls
