@@ -1,9 +1,11 @@
+from django.db import router
 from django.urls import path
-from .views import ClientView
+from rest_framework import routers
+from api import views
 
 
+router = routers.SimpleRouter()
+router.register('clients', views.ClientViewSet)
 
-urlpatterns = [
-     path('clients/', ClientView.as_view()),
-     path('client/<int:pk>', ClientView.as_view())
-]
+
+urlpatterns = router.urls
