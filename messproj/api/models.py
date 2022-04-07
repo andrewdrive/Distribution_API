@@ -17,7 +17,7 @@ class Client(models.Model):
           ordering = ['phone_number']
 
      def __str__(self):
-          return self.phone_number
+          return str((self.mobile_operator_code, self.tag))
      
      def save(self, *args, **kwargs):
           self.mobile_operator_code = self.phone_number[1:4]
