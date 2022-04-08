@@ -7,14 +7,14 @@ services:
       - "8001:8000"
     volumes:
       - './messproj:/code'
-  #   depends_on:
-  #     - db
-  # db:
-  #   build: postgres/
-  #   ports:
-  #     - "5431:5432"
-  #   environment:
-  #     - POSTGRES_DB=postgres
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - db
+  db:
+    build: postgres/
+    ports:
+      - "5431:5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     

@@ -1,3 +1,4 @@
+from email.policy import default
 from rest_framework import serializers
 from api.models import Client, Distribution, Message
 
@@ -9,9 +10,12 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class DistributionSerializer(serializers.ModelSerializer):
+
+     clients_filters = serializers.JSONField(default={"tags":[], "operator_nums": []})
+     # ОПИСАТЬ НОВЫЙ СЕРИАЛИЗАТОР ЧИСТЫЙ , и ДОБАВИТЬ ВАЛИДАЦИЮ ПО ТЭГАМ И НОМЕРАМ ОПЕРАТОРОВ
      class Meta:
           model = Distribution
-          fields = '__all__'
+          fields = ['start_datetime', 'finish_datetime', 'delivery_text', 'clients_filters']
 
 
 class MessageSerializer(serializers.ModelSerializer):
