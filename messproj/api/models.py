@@ -31,7 +31,6 @@ class Distribution(models.Model):
      clients = models.ManyToManyField(Client, related_name='distribution_cli_filter', verbose_name="""фильтр \
                                         свойств клиентов, на которых должна быть произведена рассылка(код мобильного оператора, тег)""")
      
-
      class Meta:
           ordering = ['start_datetime']
 

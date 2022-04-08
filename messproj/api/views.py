@@ -25,17 +25,10 @@ class DistributionViewSet(viewsets.ModelViewSet):
           obj = serializer.save()
           dist_start_stamp = obj.start_datetime
           dist_finish_stamp = obj.start_datetime
-          
-          tag_and_num = []
-          clients_list = list(obj.clients.values())
 
-          for d in clients_list:
-               tag_and_num.append((d['mobile_operator_code'], d['tag']))
-
-
-
+     
           if now > dist_start_stamp and now < dist_finish_stamp:
-               pass # clients = Client.objects.filter(tag=obj.)
+               clients = obj.clients.filter()
 
 
 
