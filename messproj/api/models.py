@@ -1,4 +1,3 @@
-from email.policy import default
 import pytz
 from django.db import models
 from django.core.validators import RegexValidator
@@ -32,7 +31,7 @@ class Distribution(models.Model):
      # clients = models.ManyToManyField(Client, related_name='distribution_cli_filter', verbose_name="""фильтр \
      #                                    свойств клиентов, на которых должна быть произведена рассылка(код мобильного оператора, тег)""")
      
-     clients_filter = models.JSONField(null=True, default={"tags":[], "operator_nums": []})
+     clients_filter = models.JSONField(null=True, default=dict([("tags", []), ("operator_nums", [])]))
 
      class Meta:
           ordering = ['start_datetime']
