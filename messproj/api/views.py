@@ -41,8 +41,5 @@ class DistributionViewSet(viewsets.ModelViewSet):
 
 
 
-# class ClientView(RetrieveUpdateDestroyAPIView):
-#      queryset = Client.objects.all()
-#      serializer_class = ClientSerializer
 
 # Create your views here.
