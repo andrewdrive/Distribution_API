@@ -1,6 +1,4 @@
 from django.utils import timezone
-from rest_framework.generics import RetrieveUpdateDestroyAPIView
-from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework import permissions
 from api.models import Client, Distribution, Message
@@ -20,22 +18,24 @@ class DistributionViewSet(viewsets.ModelViewSet):
 
 
      def perform_create(self, serializer):
-          now = timezone.now()
-          
           obj = serializer.save()
-          dist_start_stamp = obj.start_datetime
-          dist_finish_stamp = obj.start_datetime
+          now = timezone.now()
+          json_filter = obj.clients_filter
+          if now > obj.start_datetime and now < obj.finish_datetime:
+               clients_qs = []
 
-     
-          if now > dist_start_stamp and now < dist_finish_stamp:
-               clients = obj.clients.filter()
+               if 'tags' in json_filter:
+                    for tag_ in json_filter['tags']:
+                         clients_qs.append(Client.objects.filter(tag=tag_))
+
+               if 'mocs' in json_filter:
+                    for moc_ in json_filter['mocs']:
+                         clients_qs.append(Client.objects.filter(mobile_operator_code=moc_))
 
 
-
-
-
-
-          
+               clients_qs = set(clients_qs)
+               print(clients_qs)
+          # логика запуска отправки клинетам после создания Рассылки 
 
 
 

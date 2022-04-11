@@ -16,24 +16,29 @@ class DistributionSerializer(serializers.ModelSerializer):
 
      
      def validate_clients_filter(self, value):
-          """ Check if tags and nums not in filters"""
+          """ Check if tags and mobile_operator_codes not in filter"""
           json_ = value
-          if 'tags' in json_: 
-               tags_list = json_['tags']
-               if isinstance(tags_list, list):
-                    for tag_ in tags_list:
-                         if Client.objects.filter(tag=tag_).exists():
-                              continue
-                         else:
-                              raise serializers.ValidationError('Found no client with that tag = {x}'.format(x=tag_))
-          if 'mocs' in json_:     
-               mocs_list = json_['mocs']      
-               if isinstance(mocs_list, list):
-                    for moc_ in mocs_list:
-                         if Client.objects.filter(mobile_operator_code=moc_).exists():
-                              continue
-                         else:
-                              raise serializers.ValidationError('Found no client with that mobile operator code')
+          if 'tags' in json_ or 'mocs' in json_: 
+               if 'tags' in json_:
+                    tags_list = json_['tags']
+                    if isinstance(tags_list, list):
+                         for tag_ in tags_list:
+                              if Client.objects.filter(tag=tag_).exists():
+                                   continue
+                              else:
+                                   raise serializers.ValidationError('Found no client with that tag = {x}'.format(x=tag_))
+                    else:
+                         raise serializers.ValidationError("Invalid data structure, tags is not a list of values")
+               if 'mocs' in json_:
+                    mocs_list = json_['mocs']      
+                    if isinstance(mocs_list, list):
+                         for moc_ in mocs_list:
+                              if Client.objects.filter(mobile_operator_code=moc_).exists():
+                                   continue
+                              else:
+                                   raise serializers.ValidationError('Found no client with that mobile operator code = {x}'.format(x=moc_))
+                    else:
+                         raise serializers.ValidationError("Invalid data structure, mocs is not a list of values")
           else:
                raise serializers.ValidationError("No 'tags' or 'mocs' keys in filter (json)")
           return value

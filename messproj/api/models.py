@@ -17,7 +17,7 @@ class Client(models.Model):
           ordering = ['phone_number']
 
      def __str__(self):
-          return str((self.mobile_operator_code, self.tag))
+          return str((self.phone_number, self.tag))
      
      def save(self, *args, **kwargs):
           self.mobile_operator_code = self.phone_number[1:4]
@@ -50,7 +50,7 @@ class Message(models.Model):
           ordering = ['delivery_datetime']
 
      def __str__(self):
-          return str(self.delivery_datetime)
+          return str((str(self.delivery_datetime), self.distribution_id.delivery_text))
 
 
 # Create your models here.
