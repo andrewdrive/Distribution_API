@@ -1,4 +1,3 @@
-from email.policy import default
 from rest_framework import serializers
 from api.models import Client, Distribution, Message
 
@@ -9,45 +8,40 @@ class ClientSerializer(serializers.ModelSerializer):
           fields = '__all__'
 
 
-# class DistributionSerializer(serializers.ModelSerializer):
-
-#      clients_filters = serializers.JSONField(default={"tags":[], "operator_nums": []})
-#      # ОПИСАТЬ НОВЫЙ СЕРИАЛИЗАТОР ЧИСТЫЙ , и ДОБАВИТЬ ВАЛИДАЦИЮ ПО ТЭГАМ И НОМЕРАМ ОПЕРАТОРОВ
-#      class Meta:
-#           model = Distribution
-#           fields = ['start_datetime', 'finish_datetime', 'delivery_text', 'clients_filters']
-
-
-class DistributionSerializer(serializers.Serializer):
+class DistributionSerializer(serializers.ModelSerializer):
      start_datetime = serializers.DateTimeField()
      finish_datetime = serializers.DateTimeField()
      delivery_text = serializers.CharField(max_length=255, default='sample text', allow_blank=True)
-     clients_filters = serializers.JSONField(default=dict([("tags", []), ("operator_nums", [])]))
+     clients_filter = serializers.JSONField(default=dict([("tags", []), ("mocs", [])]), help_text='{"tags": [], "mocs": []} *mobile_operator_code = mocs')
 
-     def validate_clients_filters(self, value):
+     
+     def validate_clients_filter(self, value):
           """ Check if tags and nums not in filters"""
-          def check_for_list(obj):
-               return isinstance(obj, list)
-
           json_ = value
-          if 'tags' in json_ and 'operator_nums' in json_:
+          if 'tags' in json_: 
                tags_list = json_['tags']
-               operator_nums_list = json_['operator_nums']
-               if check_for_list(tags_list):
+               if isinstance(tags_list, list):
                     for tag_ in tags_list:
                          if Client.objects.filter(tag=tag_).exists():
                               continue
                          else:
-                              raise serializers.ValidationError('Found no client with that tag')
-               if check_for_list(operator_nums_list):
-                    for num_ in operator_nums_list:
-                         if Client.objects.filter(mobile_operator_code=num_).exists():
+                              raise serializers.ValidationError('Found no client with that tag = {x}'.format(x=tag_))
+          if 'mocs' in json_:     
+               mocs_list = json_['mocs']      
+               if isinstance(mocs_list, list):
+                    for moc_ in mocs_list:
+                         if Client.objects.filter(mobile_operator_code=moc_).exists():
                               continue
                          else:
                               raise serializers.ValidationError('Found no client with that mobile operator code')
-                    return value
           else:
-               raise serializers.ValidationError('No tags or operator_nums keys in filter (json)')
+               raise serializers.ValidationError("No 'tags' or 'mocs' keys in filter (json)")
+          return value
+
+
+     class Meta:
+          model = Distribution
+          fields = '__all__'
 
 
 class MessageSerializer(serializers.ModelSerializer):
