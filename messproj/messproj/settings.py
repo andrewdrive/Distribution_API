@@ -26,6 +26,7 @@ SECRET_KEY = 'django-insecure-(6v1ifz@w6j*+$ibhc77428ezfu$zgucawsge%h9v%1#n(=3^o
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+# CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:1337']
 
 
 # Application definition
@@ -112,6 +113,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# REST_FRAMEWORK = {
+#    'DEFAULT_AUTHENTICATION_CLASSES': (
+#        'rest_framework.authentication.TokenAuthentication',
+#    ),
+#    'DEFAULT_PERMISSION_CLASSES': (
+#         'rest_framework.permissions.IsAdminUser'
+#    ),
+# }
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
@@ -152,6 +162,9 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+
+
+BEARER_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODA2MDc4NjcsImlzcyI6ImZhYnJpcXVlIiwibmFtZSI6IkFuZHJleSJ9.u05ukmMxUV2SoxrL6R6KEw1n6_qA5eXZlJYYFhLQeBI'
 
 # try:
 #     from .local_settings import *

@@ -3,6 +3,8 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from api.models import Client, Distribution, Message
 from api.serializers import ClientSerializer, DistributionSerializer
+from api.tasks import send_message_to_clients
+
 
 
 class ClientViewSet(viewsets.ModelViewSet):
@@ -33,9 +35,15 @@ class DistributionViewSet(viewsets.ModelViewSet):
                          clients_qs.append(Client.objects.filter(mobile_operator_code=moc_))
 
 
-               clients_qs = set(clients_qs)
-               print(clients_qs)
+               clients_qs = list(set(clients_qs))[0]
+               clients_ids = list(clients_qs.values_list('id', flat=True))
+               d = {'distribution_id': obj.id, 'clients_ids': clients_ids}
+               send_message_to_clients.apply_async(args=(d), countdown=0)
+
+
+
           # логика запуска отправки клинетам после создания Рассылки 
+          
 
 
 

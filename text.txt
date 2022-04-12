@@ -64,3 +64,5 @@ API внешнего сервиса отправки:
 - Для интеграции с разрабатываемым проектом в данном задании существует внешний сервис, который может принимать запросы на отправку сообщений в сторону клиентов.
 - OpenAPI спецификация находится по адресу: https://probe.fbrq.cloud/docs
 - В этом API предполагается аутентификация с использованием JWT. Токен доступа предоставлен вам вместе с тестовым заданием.
+
+ - Bearer AUTH: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODA2MDc4NjcsImlzcyI6ImZhYnJpcXVlIiwibmFtZSI6IkFuZHJleSJ9.u05ukmMxUV2SoxrL6R6KEw1n6_qA5eXZlJYYFhLQeBI

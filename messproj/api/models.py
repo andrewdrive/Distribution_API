@@ -37,7 +37,7 @@ class Distribution(models.Model):
           ordering = ['start_datetime']
 
      def __str__(self):
-          return self.delivery_text
+          return str((self.delivery_text, self.clients_filter, str(self.start_datetime)))
 
 
 class Message(models.Model):
