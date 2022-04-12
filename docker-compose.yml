@@ -8,6 +8,7 @@ services:
     volumes:
       - './messproj:/code'
     depends_on:
+      - redis
       - db
   db:
     build: postgres/
@@ -17,4 +18,32 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-    
+  celery:
+    build: messproj/
+    command: bash -c "celery -A messproj.celery.main worker -n main_worker -E --loglevel=DEBUG"
+    volumes:
+      - './messproj:/code'
+    environment:
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=django-insecure-(6v1ifz@w6j*+$ibhc77428ezfu$zgucawsge%h9v%1#n(=3^o
+      - DJANGO_ALLOWED_HOSTS=*
+    depends_on:
+      - api
+      - redis
+  flower:
+    build: messproj/
+    command: celery -A messproj.celery.main flower --address=0.0.0.0 --port=5555 && redis-cli flushall
+    ports:
+      - 5555:5555
+    environment:
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=django-insecure-6!*m1dqjc@j&2mhmkneb8*uk1(&+c^cc-kc^2(kpvn5e*ivsh)
+      - DJANGO_ALLOWED_HOSTS=*
+    depends_on:
+      - api
+      - redis
+      - celery
+  redis:
+    image: nexus.eeep.local:8888/redis:latest
