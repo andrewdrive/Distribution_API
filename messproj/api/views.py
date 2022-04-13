@@ -3,8 +3,7 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from api.models import Client, Distribution, Message
 from api.serializers import ClientSerializer, DistributionSerializer
-from api.tasks import send_message_to_clients
-
+from api.tasks import send_msg_now
 
 
 class ClientViewSet(viewsets.ModelViewSet):
@@ -25,27 +24,35 @@ class DistributionViewSet(viewsets.ModelViewSet):
           json_filter = obj.clients_filter
           if now > obj.start_datetime and now < obj.finish_datetime:
                clients_qs = []
-
                if 'tags' in json_filter:
                     for tag_ in json_filter['tags']:
                          clients_qs.append(Client.objects.filter(tag=tag_))
-
                if 'mocs' in json_filter:
                     for moc_ in json_filter['mocs']:
                          clients_qs.append(Client.objects.filter(mobile_operator_code=moc_))
 
-
                clients_qs = list(set(clients_qs))[0]
                clients_ids = list(clients_qs.values_list('id', flat=True))
                d = {'distribution_id': obj.id, 'clients_ids': clients_ids}
-               send_message_to_clients.apply_async(args=(d), countdown=0)
-
+               send_msg_now.apply_async(args=(d), countdown=0)
 
 
           # логика запуска отправки клинетам после создания Рассылки 
           
 
 
+# - получения общей статистики по созданным рассылкам и количеству отправленных сообщений по ним с группировкой по статусам
+
+
+
+
+
+# - получения детальной статистики отправленных сообщений по конкретной рассылке
+
+
+
+
+# - обработки активных рассылок и отправки сообщений клиентам
 
 
 
