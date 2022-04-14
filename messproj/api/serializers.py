@@ -43,13 +43,18 @@ class DistributionSerializer(serializers.ModelSerializer):
                raise serializers.ValidationError("No 'tags' or 'mocs' keys in filter (json)")
           return value
 
-
      class Meta:
           model = Distribution
           fields = '__all__'
 
 
+# class DistributionDetailSerializer(serializers.):
+
+
+
 class MessageSerializer(serializers.ModelSerializer):
+     # text_message = serializers.CharField()
+
      class Meta:
           model = Message
           fields = '__all__'
