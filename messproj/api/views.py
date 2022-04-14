@@ -1,8 +1,8 @@
 from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework import permissions
-from api.models import Client, Distribution, Message
-from api.serializers import ClientSerializer, DistributionSerializer
+from api.models import Client, Distribution
+from api.serializers import ClientSerializer, DistributionSerializer, MessageSerializer
 from api.tasks import send_msg_now
 
 
@@ -33,11 +33,10 @@ class DistributionViewSet(viewsets.ModelViewSet):
 
                clients_qs = list(set(clients_qs))[0]
                clients_ids = list(clients_qs.values_list('id', flat=True))
-               d = {'distribution_id': obj.id, 'clients_ids': clients_ids}
-               send_msg_now.apply_async(args=(d), countdown=0)
+               data = {'distribution_id': obj.id, 'clients_ids': clients_ids}
+               trace = send_msg_now.apply_async(args=(data,), countdown=0)
 
-
-          # логика запуска отправки клинетам после создания Рассылки 
+               #print('ITS A TRAAAAAAAAACE', trace)
           
 
 
