@@ -45,7 +45,7 @@ class Message(models.Model):
      client_id = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='message_cli_id', verbose_name='id клиента, которому отправили')
      delivery_datetime = models.DateTimeField(null=True, verbose_name='дата и время создания(отправки)')
      delivery_status = models.BooleanField(blank=True, default=False, verbose_name='статус отправки')
-   
+     
      class Meta:
           ordering = ['delivery_datetime']
 

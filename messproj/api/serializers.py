@@ -14,7 +14,7 @@ class DistributionSerializer(serializers.ModelSerializer):
      delivery_text = serializers.CharField(max_length=255, default='sample text', allow_blank=True)
      clients_filter = serializers.JSONField(default=dict([("tags", []), ("mocs", [])]), help_text='{"tags": [], "mocs": []} *mobile_operator_code = mocs')
 
-     
+
      def validate_clients_filter(self, value):
           """ Check if tags and mobile_operator_codes not in filter"""
           json_ = value
@@ -43,13 +43,18 @@ class DistributionSerializer(serializers.ModelSerializer):
                raise serializers.ValidationError("No 'tags' or 'mocs' keys in filter (json)")
           return value
 
-
      class Meta:
           model = Distribution
           fields = '__all__'
 
 
+# class DistributionDetailSerializer(serializers.):
+
+
+
 class MessageSerializer(serializers.ModelSerializer):
+     # text_message = serializers.CharField()
+
      class Meta:
           model = Message
           fields = '__all__'
