@@ -1,7 +1,10 @@
 from django.utils import timezone
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework import permissions
-from api.models import Client, Distribution
+from rest_framework.decorators import api_view 
+from api.models import Client, Distribution, Message
 from api.serializers import ClientSerializer, DistributionSerializer, MessageSerializer
 from api.tasks import send_msg_now
 
@@ -16,6 +19,15 @@ class DistributionViewSet(viewsets.ModelViewSet):
      queryset = Distribution.objects.all()
      serializer_class = DistributionSerializer
      permission_classes = [permissions.IsAuthenticated]
+
+     def create(self, request, *args, **kwargs):
+          serializer = self.get_serializer(data=request.data)
+          serializer.is_valid(raise_exception=True)
+          extra_data = self.perform_create(serializer)
+          headers = self.get_success_headers(serializer.data)
+          augmented_serializer_data = dict(serializer.data)
+          augmented_serializer_data.update(extra_data)
+          return Response(augmented_serializer_data, status=status.HTTP_201_CREATED, headers=headers)
 
 
      def perform_create(self, serializer):
@@ -34,24 +46,32 @@ class DistributionViewSet(viewsets.ModelViewSet):
                clients_qs = list(set(clients_qs))[0]
                clients_ids = list(clients_qs.values_list('id', flat=True))
                data = {'distribution_id': obj.id, 'clients_ids': clients_ids}
-               trace = send_msg_now.apply_async(args=(data,), countdown=0)
+               send_msg_now.apply_async(args=(data,), countdown=0)
 
-               #print('ITS A TRAAAAAAAAACE', trace)
+          elif obj.start_datetime > now:
+               delta = obj.start_datetime - now 
+               countdown_in_sec = int(delta.total_seconds())
+               send_msg_now.apply_async(args=(data,), coutdown=countdown_in_sec)
+          
+          data.pop('distribution_id', None)
+          return data
           
 
-
-# - получения общей статистики по созданным рассылкам и количеству отправленных сообщений по ним с группировкой по статусам
-
-
-
-
-
-# - получения детальной статистики отправленных сообщений по конкретной рассылке
+class MessageViewSet(viewsets.ReadOnlyModelViewSet):
+     queryset = Message.objects.all()
+     serializer_class = MessageSerializer
+     permission_classes = [permissions.IsAuthenticated]
 
 
 
+# -  GET получения общей статистики по созданным рассылкам и количеству отправленных сообщений по ним с группировкой по статусам
 
-# - обработки активных рассылок и отправки сообщений клиентам
+
+
+
+
+# -  GET получения детальной статистики отправленных сообщений по конкретной рассылке
+
 
 
 

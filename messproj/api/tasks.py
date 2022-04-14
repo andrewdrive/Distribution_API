@@ -38,7 +38,7 @@ def send_msg_now(data: Dict):
      clients_ids = data['clients_ids']
 
      dist = Distribution.objects.get(pk=dist_id)
-     failed_msg_ids = []
+    
      for client_id in clients_ids:
           cli = Client.objects.get(pk=client_id)
           msg = Message(distribution_id=dist, client_id=cli, delivery_datetime=timezone.now(), delivery_status=False)
@@ -49,8 +49,3 @@ def send_msg_now(data: Dict):
           if response.status_code == 200:
                msg.delivery_status = True
                msg.save()
-          else:
-               failed_msg_ids.append(msg.id)
-     
-     if failed_msg_ids:
-          return json.dumps('failed_msg_ids = {}'.format(failed_msg_ids))
