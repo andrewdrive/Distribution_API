@@ -53,8 +53,6 @@ class DistributionSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
-     # text_message = serializers.CharField()
-
      class Meta:
           model = Message
           fields = '__all__'

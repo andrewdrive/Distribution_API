@@ -1,9 +1,10 @@
 from django.utils import timezone
+from django.db.models import Count
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework import permissions
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import action
 from api.models import Client, Distribution, Message
 from api.serializers import ClientSerializer, DistributionSerializer, MessageSerializer
 from api.tasks import send_msg_now
@@ -19,6 +20,7 @@ class DistributionViewSet(viewsets.ModelViewSet):
      queryset = Distribution.objects.all()
      serializer_class = DistributionSerializer
      permission_classes = [permissions.IsAuthenticated]
+
 
      def create(self, request, *args, **kwargs):
           serializer = self.get_serializer(data=request.data)
@@ -57,34 +59,44 @@ class DistributionViewSet(viewsets.ModelViewSet):
           return data
 
 
+
+# -  GET получения общей статистики по созданным рассылкам и количеству отправленных сообщений по ним с группировкой по статусам
+     @action(methods=['GET'], detail=False, url_path='common_msg_stat', url_name='common_msg_stat')
+     def common_stats_on_dist(self, request):
+          queryset = self.queryset
+          m = Message.objects.values('delivery_status').filter(delivery_status=True).aggregate(status=Count('delivery_status'))
+
+
+
+
+          # select ad.*, count(am.id) as total_msg, sum(am.delivery_status::int) as delivered_msg, (count(am.id) - sum(am.delivery_status::int)) as undelivered_msg from api_distribution ad left join api_message am 
+          # on am.distribution_id_id = ad.id 
+          # group by ad.id 
+          # ;
+
+
+          return Response(m)
+
+
+
           
 class MessageViewSet(viewsets.ReadOnlyModelViewSet):
      queryset = Message.objects.all()
      serializer_class = MessageSerializer
      permission_classes = [permissions.IsAuthenticated]
 
-
-     @action(methods=['GET'], detail=True, url_path='detail_stat', url_name='distribution_detail_stat')
+     # -  GET получения детальной статистики отправленных сообщений по конкретной рассылке
+     @action(methods=['GET'], detail=True, url_path='message_stat', url_name='detail_message_stat')
      def detail_message_stat(self, request, pk):
-          queryset = Message.objects.filter(distribution_id=pk)
+          try:
+               Distribution.objects.get(pk=pk)
+               queryset = Message.objects.filter(distribution_id=pk)
+          except Distribution.DoesNotExist:
+               return Response('Distribution with id={} does not exists'.format(pk))
           serializer = MessageSerializer(queryset, many=True)
-          print(serializer.data)
           return Response(serializer.data)
 
 
-
-# -  GET получения общей статистики по созданным рассылкам и количеству отправленных сообщений по ним с группировкой по статусам
-@api_view(['GET'])
-def get_distr_stats(request):
-     pass
-
-
-
-
-# -  GET получения детальной статистики отправленных сообщений по конкретной рассылке
-@api_view(['GET'])
-def get_detail_msg_stat_on_distr(request, pk):
-     pass
 
 
 
