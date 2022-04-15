@@ -1,5 +1,6 @@
+from multiprocessing.sharedctypes import Value
 from django.utils import timezone
-from django.db.models import Count
+from django.db.models import Count, Sum, Case, When, Value
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import viewsets
@@ -64,12 +65,13 @@ class DistributionViewSet(viewsets.ModelViewSet):
      @action(methods=['GET'], detail=False, url_path='common_msg_stat', url_name='common_msg_stat')
      def common_stats_on_dist(self, request):
           queryset = self.queryset
-          m = Message.objects.values('delivery_status').filter(delivery_status=True).aggregate(status=Count('delivery_status'))
+          #m = Message.objects.values('delivery_status').filter(delivery_status=True).aggregate(status=Count('delivery_status'))
+          q = queryset.annotate(total_msg=Count('message_dist_id'), delivered_msg=Sum(Case(When(message_status=True), then=Value(1))))
 
 
 
-
-          # select ad.*, count(am.id) as total_msg, sum(am.delivery_status::int) as delivered_msg, (count(am.id) - sum(am.delivery_status::int)) as undelivered_msg from api_distribution ad left join api_message am 
+          # select ad.*, count(am.id) as total_msg, sum(am.delivery_status::int) as delivered_msg, (count(am.id) - sum(am.delivery_status::int)) as undelivered_msg 
+          # from api_distribution ad left join api_message am 
           # on am.distribution_id_id = ad.id 
           # group by ad.id 
           # ;
