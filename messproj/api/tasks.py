@@ -48,3 +48,6 @@ def send_msg_now(data: Dict):
           if response.status_code == 200:
                msg.delivery_status = True
                msg.save()
+          else:
+               msg.delivery_status = False
+               msg.save()
