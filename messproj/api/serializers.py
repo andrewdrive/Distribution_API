@@ -6,7 +6,7 @@ from api.models import Client, Distribution, Message
 class ClientSerializer(serializers.ModelSerializer):
      class Meta:
           model = Client
-          fields = '__all__'
+          fields = '__all__' # перечислять лучше
 
 
 class DistributionSerializer(serializers.ModelSerializer):

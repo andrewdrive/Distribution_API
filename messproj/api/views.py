@@ -29,7 +29,7 @@ class DistributionViewSet(viewsets.ModelViewSet):
           serializer.is_valid(raise_exception=True)
           extra_data = self.perform_create(serializer)
           headers = self.get_success_headers(serializer.data)
-          augmented_serializer_data = dict(serializer.data)
+          augmented_serializer_data = dict(serializer.data) # вызов таски либо тут , либо сигналы на post_save
           augmented_serializer_data.update(extra_data)
           return Response(augmented_serializer_data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -42,11 +42,16 @@ class DistributionViewSet(viewsets.ModelViewSet):
                clients_qs = Client.objects.none()
                if 'tags' in json_filter:
                     for tag_ in json_filter['tags']:
-                         clients_qs = clients_qs.union(Client.objects.filter(tag=tag_))
+                         clients_qs = clients_qs.union(Client.objects.filter(tag=tag_)) # __in вместо цикла 
+                    # clients_qs = Client.objects.filter(tag__in=json_filter["tags"])
+
                if 'mocs' in json_filter:
                     for moc_ in json_filter['mocs']:
                          clients_qs = clients_qs.union(Client.objects.filter(mobile_operator_code=moc_))
-     
+                         #clients_qs = Client.objects.filter(mobile_operator_code__in=json_filter["mocs"])
+
+               # проверку и фильтрацию тоже вынести в таску
+
                clients_ids = list(clients_qs.values_list('id', flat=True))
                data = {'distribution_id': obj.id, 'clients_ids': clients_ids}
                send_msg_now.apply_async(args=(data,), countdown=0)
@@ -55,9 +60,9 @@ class DistributionViewSet(viewsets.ModelViewSet):
           elif obj.start_datetime > now:
                delta = obj.start_datetime - now 
                countdown_in_sec = int(delta.total_seconds())
-               send_msg_now.apply_async(args=(data,), coutdown=countdown_in_sec)
+               send_msg_now.apply_async(args=(data,), countdown=countdown_in_sec) # посмотреть celery cron
           
-          data.pop('distribution_id', None)
+          data.pop('distribution_id', None) ## убрать 
           return data
 
 
