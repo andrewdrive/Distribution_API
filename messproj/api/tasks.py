@@ -44,7 +44,7 @@ def send_msg_now(data: Dict):
           msg.save()
           request_body = {'id': msg.id, 'phone': int(cli.phone_number), 'text': dist.delivery_text}
           response = rs.send_request_to_api(msg.id, request_body)
-          # print(response)
+          print(response)
           if response.status_code == 200:
                msg.delivery_status = True
                msg.save()

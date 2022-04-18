@@ -39,18 +39,18 @@ class DistributionViewSet(viewsets.ModelViewSet):
           now = timezone.now()
           json_filter = obj.clients_filter
           if now > obj.start_datetime and now < obj.finish_datetime:
-               clients_qs = []
+               clients_qs = Client.objects.none()
                if 'tags' in json_filter:
                     for tag_ in json_filter['tags']:
-                         clients_qs.append(Client.objects.filter(tag=tag_))
+                         clients_qs = clients_qs.union(Client.objects.filter(tag=tag_))
                if 'mocs' in json_filter:
                     for moc_ in json_filter['mocs']:
-                         clients_qs.append(Client.objects.filter(mobile_operator_code=moc_))
-
-               clients_qs = list(set(clients_qs))[0]
+                         clients_qs = clients_qs.union(Client.objects.filter(mobile_operator_code=moc_))
+     
                clients_ids = list(clients_qs.values_list('id', flat=True))
                data = {'distribution_id': obj.id, 'clients_ids': clients_ids}
                send_msg_now.apply_async(args=(data,), countdown=0)
+
 
           elif obj.start_datetime > now:
                delta = obj.start_datetime - now 
@@ -65,8 +65,6 @@ class DistributionViewSet(viewsets.ModelViewSet):
 # -  GET получения общей статистики по созданным рассылкам и количеству отправленных сообщений по ним с группировкой по статусам
      @action(methods=['GET'], detail=False, url_path='common_msg_stat', url_name='common_msg_stat')
      def common_stat(self, request):
-          # m = Message.objects.values('delivery_status').filter(delivery_status=True).aggregate(status=Count('delivery_status'))
-          # q = queryset.annotate(total_msg=Count('message_dist_id'), delivered_msg=Sum(Case(When(message_status=True), then=Value(1))))
           qs = Distribution.objects.annotate(
                                              total_msg=Count('message'),
                                              delivered_msg=Sum(
@@ -85,25 +83,13 @@ class DistributionViewSet(viewsets.ModelViewSet):
                                              )
                                         )
 
-          # select ad.*, count(am.id) as total_msg, sum(am.delivery_status::int) as delivered_msg, (count(am.id) - sum(am.delivery_status::int)) as undelivered_msg 
-          # from api_distribution ad left join api_message am 
-          # on am.distribution_id_id = ad.id 
-          # group by ad.id 
-          # ;
-
-          #serializer = DistributionSerializer(qs, many=True)
           serializer = CommonStatSerializer(qs, many=True)
-     
           for qs_dist, serializer_dist in zip(qs, serializer.data):
                if qs_dist.id == serializer_dist['id']:
-                    print(qs_dist.delivered_msg, '---------------------', serializer_dist)
                     d = {"messages": {'delivered': qs_dist.delivered_msg, 'undelivered': qs_dist.undelivered_msg}}
-                    #serializer_dist['messages']['delivered'] = qs_dist.delivered_msg
-                    #serializer_dist['messages']['undelivered'] = qs_dist.undelivered_msg
                     serializer_dist.update(d)
 
           return Response(serializer.data)
-
 
 
 class MessageViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -126,3 +112,8 @@ class MessageViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 
 # Create your views here.
+    # select ad.*, count(am.id) as total_msg, sum(am.delivery_status::int) as delivered_msg, (count(am.id) - sum(am.delivery_status::int)) as undelivered_msg 
+          # from api_distribution ad left join api_message am 
+          # on am.distribution_id_id = ad.id 
+          # group by ad.id 
+          # ;
