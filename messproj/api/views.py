@@ -1,13 +1,14 @@
 from multiprocessing.sharedctypes import Value
+from django.forms import IntegerField
 from django.utils import timezone
-from django.db.models import Count, Sum, Case, When, Value
+from django.db.models import Count, Sum, Case, When, Value, IntegerField
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework import permissions
 from rest_framework.decorators import action
 from api.models import Client, Distribution, Message
-from api.serializers import ClientSerializer, DistributionSerializer, MessageSerializer
+from api.serializers import ClientSerializer, DistributionSerializer, MessageSerializer, CommonStatSerializer
 from api.tasks import send_msg_now
 
 
@@ -63,12 +64,26 @@ class DistributionViewSet(viewsets.ModelViewSet):
 
 # -  GET получения общей статистики по созданным рассылкам и количеству отправленных сообщений по ним с группировкой по статусам
      @action(methods=['GET'], detail=False, url_path='common_msg_stat', url_name='common_msg_stat')
-     def common_stats_on_dist(self, request):
-          queryset = self.queryset
-          #m = Message.objects.values('delivery_status').filter(delivery_status=True).aggregate(status=Count('delivery_status'))
-          q = queryset.annotate(total_msg=Count('message_dist_id'), delivered_msg=Sum(Case(When(message_status=True), then=Value(1))))
-
-
+     def common_stat(self, request):
+          # m = Message.objects.values('delivery_status').filter(delivery_status=True).aggregate(status=Count('delivery_status'))
+          # q = queryset.annotate(total_msg=Count('message_dist_id'), delivered_msg=Sum(Case(When(message_status=True), then=Value(1))))
+          qs = Distribution.objects.annotate(
+                                             total_msg=Count('message'),
+                                             delivered_msg=Sum(
+                                                  Case(
+                                                       When(message__delivery_status__isnull=False, then=Value(1)),
+                                                       default=Value(0),
+                                                       output_field=IntegerField()
+                                                  )
+                                             ),
+                                             undelivered_msg=Sum(
+                                                  Case(
+                                                       When(message__delivery_status__isnull=True, then=Value(1)),
+                                                       default=Value(0),
+                                                       output_field=IntegerField()
+                                                  )
+                                             )
+                                        )
 
           # select ad.*, count(am.id) as total_msg, sum(am.delivery_status::int) as delivered_msg, (count(am.id) - sum(am.delivery_status::int)) as undelivered_msg 
           # from api_distribution ad left join api_message am 
@@ -76,29 +91,36 @@ class DistributionViewSet(viewsets.ModelViewSet):
           # group by ad.id 
           # ;
 
+          #serializer = DistributionSerializer(qs, many=True)
+          serializer = CommonStatSerializer(qs, many=True)
+     
+          for qs_dist, serializer_dist in zip(qs, serializer.data):
+               if qs_dist.id == serializer_dist['id']:
+                    print(qs_dist.delivered_msg, '---------------------', serializer_dist)
+                    d = {"messages": {'delivered': qs_dist.delivered_msg, 'undelivered': qs_dist.undelivered_msg}}
+                    #serializer_dist['messages']['delivered'] = qs_dist.delivered_msg
+                    #serializer_dist['messages']['undelivered'] = qs_dist.undelivered_msg
+                    serializer_dist.update(d)
 
-          return Response(m)
+          return Response(serializer.data)
 
 
 
-          
-class MessageViewSet(viewsets.ReadOnlyModelViewSet):
+class MessageViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
      queryset = Message.objects.all()
      serializer_class = MessageSerializer
      permission_classes = [permissions.IsAuthenticated]
 
      # -  GET получения детальной статистики отправленных сообщений по конкретной рассылке
-     @action(methods=['GET'], detail=True, url_path='message_stat', url_name='detail_message_stat')
+     @action(methods=['GET'], detail=True, url_path='msg_stat_by_dist', url_name='message_stat_by_detail_distrib')
      def detail_message_stat(self, request, pk):
           try:
                Distribution.objects.get(pk=pk)
-               queryset = Message.objects.filter(distribution_id=pk)
+               queryset = Message.objects.filter(distribution=pk)
           except Distribution.DoesNotExist:
                return Response('Distribution with id={} does not exists'.format(pk))
           serializer = MessageSerializer(queryset, many=True)
           return Response(serializer.data)
-
-
 
 
 

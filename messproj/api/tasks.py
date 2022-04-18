@@ -40,7 +40,7 @@ def send_msg_now(data: Dict):
     
      for client_id in clients_ids:
           cli = Client.objects.get(pk=client_id)
-          msg = Message(distribution_id=dist, client_id=cli, delivery_datetime=timezone.now(), delivery_status=False)
+          msg = Message(distribution_id=dist_id, client_id=cli.id, delivery_datetime=timezone.now(), delivery_status=False)
           msg.save()
           request_body = {'id': msg.id, 'phone': int(cli.phone_number), 'text': dist.delivery_text}
           response = rs.send_request_to_api(msg.id, request_body)

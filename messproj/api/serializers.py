@@ -1,3 +1,4 @@
+from dataclasses import field
 from rest_framework import serializers
 from api.models import Client, Distribution, Message
 
@@ -48,11 +49,18 @@ class DistributionSerializer(serializers.ModelSerializer):
           fields = '__all__'
 
 
-# class DistributionDetailSerializer(serializers.):
-
-
-
 class MessageSerializer(serializers.ModelSerializer):
+
+
      class Meta:
           model = Message
           fields = '__all__'
+
+
+class CommonStatSerializer(serializers.ModelSerializer):
+     # messages = serializers.JSONField(default=dict([("delivered", "0"), ("undelivered", "0")]))
+     
+     class Meta:
+          model = Distribution
+          fields = ['id', 'delivery_text']
+     

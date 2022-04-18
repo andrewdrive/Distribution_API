@@ -13,6 +13,7 @@ class Client(models.Model):
      tag = models.CharField(max_length=30, blank=True, verbose_name='тег(произвольная метка)')
      timezone = models.CharField(max_length=32, choices=TIMEZONES, default='UTC', verbose_name='часовой пояс')
 
+
      class Meta:
           ordering = ['phone_number']
 
@@ -41,16 +42,17 @@ class Distribution(models.Model):
 
 
 class Message(models.Model):
-     distribution_id = models.ForeignKey(Distribution, on_delete=models.CASCADE, related_name='message_dist_id', verbose_name='id рассылки, в рамках которой было отправлено сообщение')
-     client_id = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='message_cli_id', verbose_name='id клиента, которому отправили')
+     distribution = models.ForeignKey(Distribution, on_delete=models.CASCADE, verbose_name='id рассылки, в рамках которой было отправлено сообщение')
+     client = models.ForeignKey(Client, on_delete=models.CASCADE, verbose_name='id клиента, которому отправили')
      delivery_datetime = models.DateTimeField(null=True, verbose_name='дата и время создания(отправки)')
-     delivery_status = models.BooleanField(blank=True, default=False, related_name='message_status',verbose_name='статус отправки')
+     delivery_status = models.BooleanField(blank=True, default=False, verbose_name='статус отправки')
      
+
      class Meta:
           ordering = ['delivery_datetime']
 
      def __str__(self):
-          return str((str(self.delivery_datetime), self.distribution_id.delivery_text))
+          return str((str(self.delivery_datetime), self.distribution.delivery_text))
 
 
 # Create your models here.
