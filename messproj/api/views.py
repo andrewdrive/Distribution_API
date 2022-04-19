@@ -22,19 +22,8 @@ class DistributionViewSet(viewsets.ModelViewSet):
      queryset = Distribution.objects.all()
      serializer_class = DistributionSerializer
      permission_classes = [permissions.IsAuthenticated]
-
-
-     # def create(self, request, *args, **kwargs):
-     #      serializer = self.get_serializer(data=request.data)          
-     #      serializer.is_valid(raise_exception=True)
-     #      headers = self.get_success_headers(serializer.data)                                  
-     #      return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-     # def perform_create(self, serializer):
-     #      now = timezone.now()
-     #      obj = serializer.save()
           
-
+          
 # -  GET получения общей статистики по созданным рассылкам и количеству отправленных сообщений по ним с группировкой по статусам
      @action(methods=['GET'], detail=False, url_path='common_msg_stat', url_name='common_msg_stat')
      def common_stat(self, request):
