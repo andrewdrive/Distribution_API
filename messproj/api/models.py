@@ -29,10 +29,8 @@ class Distribution(models.Model):
      start_datetime = models.DateTimeField(null=True, verbose_name='дата и время запуска рассылки')
      finish_datetime = models.DateTimeField(null=True, verbose_name='дата и время окончания рассылки')
      delivery_text = models.CharField(max_length=255, verbose_name='текст сообщения для доставки клиенту')
-     # clients = models.ManyToManyField(Client, related_name='distribution_cli_filter', verbose_name="""фильтр \
-     #                                    свойств клиентов, на которых должна быть произведена рассылка(код мобильного оператора, тег)""")
-     
      clients_filter = models.JSONField(default=dict([("tags", []), ("mocs", [])]))
+
 
      class Meta:
           ordering = ['start_datetime']

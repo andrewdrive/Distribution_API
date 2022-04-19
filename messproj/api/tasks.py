@@ -29,13 +29,23 @@ class RequestSender:
 
 
 @app.task
-def send_msg_now(data: Dict):
+def send_msg_now(obj_id: int):
+     def get_clients_ids(id_: int):
+          obj = Distribution.objects.get(pk=id_)
+          json_filter = obj.clients_filter
+          clients_qs = Client.objects.none()
+          if 'tags' in json_filter:
+               clients_qs = clients_qs.union(Client.objects.filter(tag__in=json_filter["tags"]))
+               clients_ids = list(clients_qs.values_list('id', flat=True))
+          if 'mocs' in json_filter:
+               clients_qs = clients_qs.union(Client.objects.filter(mobile_operator_code__in=json_filter["mocs"]))
+               clients_ids = list(clients_qs.values_list('id', flat=True))
+          return clients_ids
+
      url = 'https://probe.fbrq.cloud/v1/send/'
-
      rs = RequestSender(endpoint=url)
-     dist_id = data['distribution_id']
-     clients_ids = data['clients_ids']
-
+     dist_id = obj_id
+     clients_ids = get_clients_ids(dist_id)
      dist = Distribution.objects.get(pk=dist_id)
     
      for client_id in clients_ids:

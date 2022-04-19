@@ -1,7 +1,7 @@
 from multiprocessing.sharedctypes import Value
 from django.forms import IntegerField
-from django.utils import timezone
 from django.db.models import Count, Sum, Case, When, Value, IntegerField
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import viewsets, mixins
@@ -9,7 +9,7 @@ from rest_framework import permissions
 from rest_framework.decorators import action
 from api.models import Client, Distribution, Message
 from api.serializers import ClientSerializer, DistributionSerializer, MessageSerializer, CommonStatSerializer
-from api.tasks import send_msg_now
+from .signals import start_task_to_send_messages
 
 
 class ClientViewSet(viewsets.ModelViewSet):
@@ -24,48 +24,16 @@ class DistributionViewSet(viewsets.ModelViewSet):
      permission_classes = [permissions.IsAuthenticated]
 
 
-     def create(self, request, *args, **kwargs):
-          serializer = self.get_serializer(data=request.data)
-          serializer.is_valid(raise_exception=True)
-          extra_data = self.perform_create(serializer)
-          headers = self.get_success_headers(serializer.data)
-          augmented_serializer_data = dict(serializer.data) # вызов таски либо тут , либо сигналы на post_save
-          augmented_serializer_data.update(extra_data)
-          return Response(augmented_serializer_data, status=status.HTTP_201_CREATED, headers=headers)
+     # def create(self, request, *args, **kwargs):
+     #      serializer = self.get_serializer(data=request.data)          
+     #      serializer.is_valid(raise_exception=True)
+     #      headers = self.get_success_headers(serializer.data)                                  
+     #      return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-
-     def perform_create(self, serializer):
-          obj = serializer.save()
-          now = timezone.now()
-          json_filter = obj.clients_filter
-          if now > obj.start_datetime and now < obj.finish_datetime:
-               clients_qs = Client.objects.none()
-               if 'tags' in json_filter:
-                    for tag_ in json_filter['tags']:
-                         clients_qs = clients_qs.union(Client.objects.filter(tag=tag_)) # __in вместо цикла 
-                    # clients_qs = Client.objects.filter(tag__in=json_filter["tags"])
-
-               if 'mocs' in json_filter:
-                    for moc_ in json_filter['mocs']:
-                         clients_qs = clients_qs.union(Client.objects.filter(mobile_operator_code=moc_))
-                         #clients_qs = Client.objects.filter(mobile_operator_code__in=json_filter["mocs"])
-
-               # проверку и фильтрацию тоже вынести в таску
-
-               clients_ids = list(clients_qs.values_list('id', flat=True))
-               data = {'distribution_id': obj.id, 'clients_ids': clients_ids}
-               send_msg_now.apply_async(args=(data,), countdown=0)
-
-
-          elif obj.start_datetime > now:
-               delta = obj.start_datetime - now 
-               countdown_in_sec = int(delta.total_seconds())
-               send_msg_now.apply_async(args=(data,), countdown=countdown_in_sec) # посмотреть celery cron
+     # def perform_create(self, serializer):
+     #      now = timezone.now()
+     #      obj = serializer.save()
           
-          data.pop('distribution_id', None) ## убрать 
-          return data
-
-
 
 # -  GET получения общей статистики по созданным рассылкам и количеству отправленных сообщений по ним с группировкой по статусам
      @action(methods=['GET'], detail=False, url_path='common_msg_stat', url_name='common_msg_stat')
@@ -114,11 +82,4 @@ class MessageViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
           return Response(serializer.data)
 
 
-
-
 # Create your views here.
-    # select ad.*, count(am.id) as total_msg, sum(am.delivery_status::int) as delivered_msg, (count(am.id) - sum(am.delivery_status::int)) as undelivered_msg 
-          # from api_distribution ad left join api_message am 
-          # on am.distribution_id_id = ad.id 
-          # group by ad.id 
-          # ;

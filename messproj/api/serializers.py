@@ -1,4 +1,3 @@
-from dataclasses import field
 from rest_framework import serializers
 from api.models import Client, Distribution, Message
 
@@ -6,7 +5,7 @@ from api.models import Client, Distribution, Message
 class ClientSerializer(serializers.ModelSerializer):
      class Meta:
           model = Client
-          fields = '__all__' # перечислять лучше
+          fields = ['phone_number', 'mobile_operator_code', 'tag', 'timezone']
 
 
 class DistributionSerializer(serializers.ModelSerializer):
@@ -46,20 +45,16 @@ class DistributionSerializer(serializers.ModelSerializer):
 
      class Meta:
           model = Distribution
-          fields = '__all__'
+          fields = ['start_datetime', 'finish_datetime', 'delivery_text', 'clients_filter']
 
 
 class MessageSerializer(serializers.ModelSerializer):
-
-
      class Meta:
           model = Message
-          fields = '__all__'
+          fields = ['distribution', 'client', 'delivery_datetime', 'delivery_status']
 
 
 class CommonStatSerializer(serializers.ModelSerializer):
-     # messages = serializers.JSONField(default=dict([("delivered", "0"), ("undelivered", "0")]))
-     
      class Meta:
           model = Distribution
           fields = ['id', 'delivery_text']
