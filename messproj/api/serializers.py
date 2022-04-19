@@ -5,7 +5,7 @@ from api.models import Client, Distribution, Message
 class ClientSerializer(serializers.ModelSerializer):
      class Meta:
           model = Client
-          fields = '__all__'
+          fields = ['phone_number', 'mobile_operator_code', 'tag', 'timezone']
 
 
 class DistributionSerializer(serializers.ModelSerializer):
@@ -45,16 +45,17 @@ class DistributionSerializer(serializers.ModelSerializer):
 
      class Meta:
           model = Distribution
-          fields = '__all__'
-
-
-# class DistributionDetailSerializer(serializers.):
-
+          fields = ['start_datetime', 'finish_datetime', 'delivery_text', 'clients_filter']
 
 
 class MessageSerializer(serializers.ModelSerializer):
-     # text_message = serializers.CharField()
-
      class Meta:
           model = Message
-          fields = '__all__'
+          fields = ['distribution', 'client', 'delivery_datetime', 'delivery_status']
+
+
+class CommonStatSerializer(serializers.ModelSerializer):
+     class Meta:
+          model = Distribution
+          fields = ['id', 'delivery_text']
+     
