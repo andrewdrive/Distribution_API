@@ -2,7 +2,6 @@ import requests
 from requests.structures import CaseInsensitiveDict
 from messproj.celery.main import app
 from messproj.settings import BEARER_TOKEN
-from typing import Dict
 from api.models import Message, Client, Distribution
 from django.utils import timezone
 
