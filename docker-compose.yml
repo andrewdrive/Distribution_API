@@ -46,4 +46,4 @@ services:
       - redis
       - celery
   redis:
-    image: nexus.eeep.local:8888/redis:latest
+    image: redis:latest
