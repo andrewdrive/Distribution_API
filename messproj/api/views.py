@@ -1,15 +1,11 @@
-from multiprocessing.sharedctypes import Value
 from django.forms import IntegerField
 from django.db.models import Count, Sum, Case, When, Value, IntegerField
-from django.utils import timezone
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import viewsets, mixins
 from rest_framework import permissions
 from rest_framework.decorators import action
 from api.models import Client, Distribution, Message
 from api.serializers import ClientSerializer, DistributionSerializer, MessageSerializer, CommonStatSerializer
-from .signals import start_task_to_send_messages
 
 
 class ClientViewSet(viewsets.ModelViewSet):
@@ -23,7 +19,7 @@ class DistributionViewSet(viewsets.ModelViewSet):
      serializer_class = DistributionSerializer
      permission_classes = [permissions.IsAuthenticated]
           
-          
+
 # -  GET получения общей статистики по созданным рассылкам и количеству отправленных сообщений по ним с группировкой по статусам
      @action(methods=['GET'], detail=False, url_path='common_msg_stat', url_name='common_msg_stat')
      def common_stat(self, request):
