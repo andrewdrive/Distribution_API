@@ -1,1 +1,1 @@
-FROM nexus.eeep.local:8888/postgis/postgis:13-3.1
+FROM postgres

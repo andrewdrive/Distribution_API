@@ -26,7 +26,6 @@ SECRET_KEY = 'django-insecure-(6v1ifz@w6j*+$ibhc77428ezfu$zgucawsge%h9v%1#n(=3^o
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-# CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:1337']
 
 
 # Application definition
@@ -86,7 +85,7 @@ WSGI_APPLICATION = 'messproj.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('DB_NAME', 'postgres'),
         'USER': os.environ.get('DB_USER', 'postgres'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),

@@ -19,7 +19,7 @@ class DistributionViewSet(viewsets.ModelViewSet):
      queryset = Distribution.objects.all()
      serializer_class = DistributionSerializer
      permission_classes = [permissions.IsAuthenticated]
-          
+       
 
 # -  GET получения общей статистики по созданным рассылкам и количеству отправленных сообщений по ним с группировкой по статусам
      @action(methods=['GET'], detail=False, url_path='common_msg_stat', url_name='common_msg_stat')
