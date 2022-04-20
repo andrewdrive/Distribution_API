@@ -17,7 +17,3 @@ def send_messages(sender, instance, created, **kwargs):
                delta = start_datetime - now 
                countdown_in_sec = int(delta.total_seconds())
                send_msg_now.apply_async(args=(obj_id, ), countdown=countdown_in_sec)
-          
-          # post_save.disconnect(send_messages, sender=Distribution)
-          # instance.save()
-          # post_save.connect(send_messages, sender=Distribution)
