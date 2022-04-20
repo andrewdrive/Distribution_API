@@ -1,5 +1,3 @@
-from itertools import count
-from tracemalloc import start
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from api.tasks import send_msg_now

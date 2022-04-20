@@ -8,6 +8,7 @@ from api.models import Client, Distribution, Message
 from api.serializers import ClientSerializer, DistributionSerializer, MessageSerializer, CommonStatSerializer
 
 
+
 class ClientViewSet(viewsets.ModelViewSet):
      queryset = Client.objects.all()
      serializer_class = ClientSerializer

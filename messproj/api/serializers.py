@@ -39,7 +39,7 @@ class DistributionSerializer(serializers.ModelSerializer):
                                    raise serializers.ValidationError('Found no client with that mobile operator code = {x}'.format(x=moc_))
                     else:
                          raise serializers.ValidationError("Invalid data structure, mocs is not a list of values")
-          else:
+          elif len(json_) != 0:
                raise serializers.ValidationError("No 'tags' or 'mocs' keys in filter (json)")
           return value
 

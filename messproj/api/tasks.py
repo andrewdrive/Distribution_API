@@ -2,7 +2,6 @@ import requests
 from requests.structures import CaseInsensitiveDict
 from messproj.celery.main import app
 from messproj.settings import BEARER_TOKEN
-from typing import Dict
 from api.models import Message, Client, Distribution
 from django.utils import timezone
 
@@ -28,9 +27,7 @@ class RequestSender:
           return response
 
 
-@app.task
-def send_msg_now(obj_id: int):
-     def get_clients_ids(id_: int):
+def get_clients_ids(id_: int):
           obj = Distribution.objects.get(pk=id_)
           json_filter = obj.clients_filter
           clients_qs = Client.objects.none()
@@ -40,7 +37,16 @@ def send_msg_now(obj_id: int):
           if 'mocs' in json_filter:
                clients_qs = clients_qs.union(Client.objects.filter(mobile_operator_code__in=json_filter["mocs"]))
                clients_ids = list(clients_qs.values_list('id', flat=True))
+          if len(clients_qs) == 0:
+               clients_qs = Client.objects.all()
+               clients_ids = clients_qs.values_list('id', flat=True)
+               
           return clients_ids
+
+
+@app.task
+def send_msg_now(obj_id: int):
+     
 
      url = 'https://probe.fbrq.cloud/v1/send/'
      rs = RequestSender(endpoint=url)
@@ -54,7 +60,7 @@ def send_msg_now(obj_id: int):
           msg.save()
           request_body = {'id': msg.id, 'phone': int(cli.phone_number), 'text': dist.delivery_text}
           response = rs.send_request_to_api(msg.id, request_body)
-          print(response)
+          # print(response)
           if response.status_code == 200:
                msg.delivery_status = True
                msg.save()
